@@ -1,0 +1,39 @@
+{
+  "id": "/",
+  "name": "Asistencia · Gestión Escolar",
+  "short_name": "Asistencia",
+  "description": "Asistencia escolar sencilla, rápida y segura.",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffaf7",
+  "theme_color": "#a51e23",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/dgeti-app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/dgeti-app-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/dgeti-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/dgeti-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

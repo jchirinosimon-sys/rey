@@ -1,0 +1,68 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import path from 'node:path';
+import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
+import { JsonStorage } from '../backend/src/storage/json-storage.js';
+import { hashPassword } from '../backend/src/security.js';
+
+async function freePort(){const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const port=server.address().port;await new Promise(resolve=>server.close(resolve));return port;}
+test('API autentica, crea usuarios sin revelar hashes y aísla los datos de cada familia', { timeout:15000 }, async t=>{
+  const dir=await mkdtemp(path.join(process.cwd(),'.test-data-')),dataDir=path.join(dir,'data'),backupDir=path.join(dir,'backups'),port=await freePort(),secret='secreto-de-integracion-de-prueba-de-32-caracteres';
+  const storage=new JsonStorage(dataDir);await storage.init();
+  await storage.write('alumnos',[{id:'a-1',nombres:'Ana',apellidos:'Uno'},{id:'a-2',nombres:'Luis',apellidos:'Dos'}]);
+  await storage.write('tutores',[{id:'t-1',nombres:'Tutor Uno'},{id:'t-2',nombres:'Tutor Dos'}]);
+  await storage.write('maestros',[{id:'m-1',nombres:'Marta',apellidos:'Maestra',activo:true}]);
+  await storage.write('grupos',[{id:'g-1',nombre:'A',ciclo:'2026',activo:true}]);
+  await storage.write('materias',[{id:'mat-1',nombre:'Ciencias',activo:true}]);
+  await storage.write('inscripciones',[{id:'i-1',alumnoId:'a-1',grupoId:'g-1',ciclo:'2026',estado:'activa'}]);
+  const localDate=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Guatemala',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const weekday=new Date(`${localDate}T12:00:00Z`).getUTCDay();
+  await storage.write('calendario_escolar',[{id:'cal-1',fecha:localDate,tipo:'lectivo',descripcion:'Día de clases'}]);
+  const zoneTime=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Guatemala',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());const currentMinute=Number(zoneTime.find(x=>x.type==='hour').value)*60+Number(zoneTime.find(x=>x.type==='minute').value);const finishMinute=Math.max(1,currentMinute-1);const asTime=n=>`${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
+  await storage.write('horarios',[{id:'h-1',diaSemana:weekday,horaInicio:asTime(Math.max(0,finishMinute-30)),horaFin:asTime(finishMinute),materiaId:'mat-1',maestroId:'m-1',grupoId:'g-1',aula:'A-1'}]);
+  await storage.write('periodos_evaluacion',[{id:'p-1',nombre:'Primer periodo',iniciaEn:'2026-01-01',terminaEn:'2026-12-31',escalaMin:0,escalaMax:100,estado:'abierto'}]);
+  await storage.write('relaciones_tutores',[{id:'r-1',tutorId:'t-1',alumnoId:'a-1',activa:true},{id:'r-2',tutorId:'t-2',alumnoId:'a-2',activa:true}]);
+  await storage.write('faltas',[{id:'f-1',alumnoId:'a-1',estado:'confirmada'},{id:'f-2',alumnoId:'a-2',estado:'confirmada'}]);
+  await storage.write('usuarios',[{id:'u-admin',email:'admin@test.local',nombre:'Dirección',rol:'direccion',activo:true,passwordHash:await hashPassword('clave-segura-admin')},{id:'u-t1',email:'tutor1@test.local',nombre:'Tutor Uno',rol:'tutor',activo:true,personaId:'t-1',passwordHash:await hashPassword('clave-segura-tutor')}]);
+  const child=spawn(process.execPath,['backend/src/server.js'],{cwd:process.cwd(),env:{...process.env,PORT:String(port),HOST:'127.0.0.1',SESSION_SECRET:secret,DATA_DIR:dataDir,BACKUP_DIR:backupDir},stdio:['ignore','pipe','pipe']});let serverOutput='';child.stderr.on('data',chunk=>serverOutput+=chunk.toString());child.stdout.on('data',chunk=>serverOutput+=chunk.toString());
+  t.after(async()=>{child.kill();await new Promise(resolve=>{if(child.exitCode!==null)return resolve();child.once('exit',resolve);setTimeout(resolve,2000).unref();});await rm(dir,{recursive:true,force:true});});
+  const base=`http://127.0.0.1:${port}`;let health,connectionError='';
+  for(let attempt=0;attempt<50;attempt++){try{health=await fetch(`${base}/api/health`);if(health.ok)break;}catch(error){connectionError=error.message;}await new Promise(resolve=>setTimeout(resolve,100));}
+  assert.equal(health?.status,200,`el servidor debe iniciar: ${serverOutput} ${connectionError}`);
+  async function login(email,password){const r=await fetch(`${base}/api/auth/login`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password})});assert.equal(r.status,200);return(await r.json()).token;}
+  const admin=await login('admin@test.local','clave-segura-admin');
+  const signup=await fetch(`${base}/api/auth/solicitudes`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({nombre:'Alumno solicitud',email:'solicitud@test.local',rol:'alumno',password:'clave-segura-solicitud'})});assert.equal(signup.status,202);
+  const storedRequest=(await storage.read('solicitudes_cuenta')).find(x=>x.email==='solicitud@test.local');assert.ok(storedRequest?.passwordHash);assert.notEqual(storedRequest.passwordHash,'clave-segura-solicitud');
+  const pendingLogin=await fetch(`${base}/api/auth/login`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:'solicitud@test.local',password:'clave-segura-solicitud'})});assert.equal(pendingLogin.status,401);
+  const requests=await fetch(`${base}/api/solicitudes_cuenta`,{headers:{authorization:`Bearer ${admin}`}});assert.equal(requests.status,200);assert.equal('passwordHash'in (await requests.json())[0],false);
+  const approval=await fetch(`${base}/api/solicitudes_cuenta/${storedRequest.id}/resolver`,{method:'POST',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({decision:'aprobar',personaId:'a-2'})});assert.equal(approval.status,200);assert.equal((await login('solicitud@test.local','clave-segura-solicitud'))!==null,true);
+  const badLogin=await fetch(`${base}/api/auth/login`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:'desconocido@test.local',password:'no-guardar-esta-clave'})});assert.equal(badLogin.status,401);
+  const accessLog=await storage.read('auditoria');assert.ok(accessLog.some(x=>x.accion==='inicio_sesion_correcto'&&x.email==='admin@test.local'));assert.ok(accessLog.some(x=>x.accion==='inicio_sesion_fallido'&&x.email==='desconocido@test.local'));assert.doesNotMatch(JSON.stringify(accessLog),/no-guardar-esta-clave|clave-segura-admin/);
+  const created=await fetch(`${base}/api/usuarios`,{method:'POST',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({nombre:'Alumno nuevo',email:'nuevo@test.local',rol:'alumno',personaId:'a-1',password:'clave-temporal-larga'})});
+  assert.equal(created.status,201);const createdUser=await created.json();assert.equal('passwordHash'in createdUser,false);
+  const editedUser=await fetch(`${base}/api/usuarios/${createdUser.id}`,{method:'PATCH',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({nombre:'Alumno editado',email:'ALUMNO-EDITADO@test.local'})});assert.equal(editedUser.status,200);assert.equal((await editedUser.json()).email,'alumno-editado@test.local');
+  const reset=await fetch(`${base}/api/usuarios/${createdUser.id}/password`,{method:'PATCH',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({password:'clave-restablecida-larga'})});assert.equal(reset.status,200);assert.equal((await login('alumno-editado@test.local','clave-restablecida-larga'))!==null,true);
+  const users=await fetch(`${base}/api/usuarios`,{headers:{authorization:`Bearer ${admin}`}});assert.equal(users.status,200);assert.equal(JSON.stringify(await users.json()).includes('passwordHash'),false);
+  const teacherAccount=await fetch(`${base}/api/usuarios`,{method:'POST',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({nombre:'Marta Maestra',email:'maestra@test.local',rol:'maestro',personaId:'m-1',password:'clave-temporal-maestra'})});assert.equal(teacherAccount.status,201);
+  const teacher=await login('maestra@test.local','clave-temporal-maestra');const opened=await fetch(`${base}/api/listas_asistencia`,{method:'POST',headers:{authorization:`Bearer ${teacher}`,'content-type':'application/json'},body:JSON.stringify({horarioId:'h-1'})});assert.equal(opened.status,201);const list=await opened.json();assert.equal(list.alumnos[0].estado,'pendiente');
+  if(currentMinute>2){const closed=await fetch(`${base}/api/listas_asistencia/${list.id}/cerrar`,{method:'POST',headers:{authorization:`Bearer ${teacher}`,'content-type':'application/json'},body:JSON.stringify({alumnos:[{alumnoId:'a-1',estado:'ausente'}]})});assert.equal(closed.status,200);assert.ok((await storage.read('faltas')).some(x=>x.listaId===list.id));}
+  const gradeResponse=await fetch(`${base}/api/calificaciones`,{method:'POST',headers:{authorization:`Bearer ${teacher}`,'content-type':'application/json'},body:JSON.stringify({alumnoId:'a-1',materiaId:'mat-1',periodoId:'p-1',grupoId:'g-1',valor:94})});assert.equal(gradeResponse.status,201,`${JSON.stringify(await gradeResponse.json())} ${serverOutput}`);
+  const studentAccount=await fetch(`${base}/api/usuarios`,{method:'POST',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({nombre:'Ana Uno',email:'alumna@test.local',rol:'alumno',personaId:'a-1',password:'clave-temporal-alumna'})});assert.equal(studentAccount.status,201);
+  const studentToken=await login('alumna@test.local','clave-temporal-alumna');const hiddenGrades=await fetch(`${base}/api/calificaciones`,{headers:{authorization:`Bearer ${studentToken}`}});assert.deepEqual(await hiddenGrades.json(),[]);
+  const published=await fetch(`${base}/api/boletas/publicar`,{method:'POST',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({alumnoId:'a-1',periodoId:'p-1'})});assert.equal(published.status,200,`${JSON.stringify(await published.json())} ${serverOutput}`);
+  const visibleGrades=await fetch(`${base}/api/calificaciones`,{headers:{authorization:`Bearer ${studentToken}`}});assert.equal((await visibleGrades.json()).length,1);
+  const blockedCorrection=await fetch(`${base}/api/calificaciones`,{method:'POST',headers:{authorization:`Bearer ${teacher}`,'content-type':'application/json'},body:JSON.stringify({alumnoId:'a-1',materiaId:'mat-1',periodoId:'p-1',grupoId:'g-1',valor:90})});assert.equal(blockedCorrection.status,409);
+  const minute=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Guatemala',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());const nowMinutes=Number(minute.find(x=>x.type==='hour').value)*60+Number(minute.find(x=>x.type==='minute').value);const hhmm=n=>`${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
+  const jornada=await fetch(`${base}/api/jornadas`,{method:'POST',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({fecha:localDate,abreEn:hhmm(Math.max(0,nowMinutes-2)),cierraEn:hhmm(Math.min(1439,nowMinutes+2))})});assert.equal(jornada.status,201);const jornadaData=await jornada.json();
+  const qr=await fetch(`${base}/api/qr_diarios/renovar`,{method:'POST',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({jornadaId:jornadaData.id})});assert.equal(qr.status,201);const qrData=await qr.json();assert.match(qrData.token,/^[A-Za-z0-9_-]{22}$/);
+  const attendance=await fetch(`${base}/api/asistencias/registrar`,{method:'POST',headers:{authorization:`Bearer ${studentToken}`,'content-type':'application/json'},body:JSON.stringify({token:qrData.token})});assert.equal(attendance.status,201);
+  const duplicateAttendance=await fetch(`${base}/api/asistencias/registrar`,{method:'POST',headers:{authorization:`Bearer ${studentToken}`,'content-type':'application/json'},body:JSON.stringify({token:qrData.token})});assert.equal(duplicateAttendance.status,409);
+  const tutor=await login('tutor1@test.local','clave-segura-tutor');const own=await fetch(`${base}/api/faltas`,{headers:{authorization:`Bearer ${tutor}`}});assert.equal(own.status,200);const familyFaults=await own.json();assert.ok(familyFaults.length>=1);assert.ok(familyFaults.every(x=>x.alumnoId==='a-1'));
+  const page=await fetch(`${base}/api/faltas?limit=1&offset=0`,{headers:{authorization:`Bearer ${tutor}`}});assert.equal(page.status,200);assert.equal((await page.json()).length,1);assert.ok(Number(page.headers.get('x-total-count'))>=2);
+  const csv=await fetch(`${base}/api/exportar/faltas.csv`,{headers:{authorization:`Bearer ${tutor}`}});assert.equal(csv.status,200);const csvText=await csv.text();assert.match(csvText,/f-1/);assert.doesNotMatch(csvText,/a-2/);
+  const request=await fetch(`${base}/api/justificaciones`,{method:'POST',headers:{authorization:`Bearer ${tutor}`,'content-type':'application/json'},body:JSON.stringify({alumnoId:'a-1',registroId:'f-1',motivo:'Cita médica con constancia'})});assert.equal(request.status,201);const requestData=await request.json();
+  const resolved=await fetch(`${base}/api/justificaciones/${requestData.id}/resolver`,{method:'POST',headers:{authorization:`Bearer ${admin}`,'content-type':'application/json'},body:JSON.stringify({decision:'autorizar'})});assert.equal(resolved.status,200);assert.equal((await storage.read('faltas')).find(x=>x.id==='f-1').estado,'justificada');
+  const denied=await fetch(`${base}/api/usuarios`,{headers:{authorization:`Bearer ${tutor}`}});assert.equal(denied.status,403);
+});
