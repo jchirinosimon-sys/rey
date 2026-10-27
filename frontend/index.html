@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#123c68"><meta name="description" content="Asistencia escolar segura para la comunidad del CBTIS 170."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Asistencia escolar | CBTIS 170</title><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="/icons/dgeti-app-192.png"><link rel="apple-touch-icon" href="/icons/dgeti-app-192.png"><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./modules.css">
+  <meta name="theme-color" content="#123c68"><meta name="description" content="Asistencia escolar segura para la comunidad del CBTIS 170."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Asistencia escolar | CBTIS 170</title><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="/icons/dgeti-app-192.png"><link rel="apple-touch-icon" href="/icons/dgeti-app-192.png"><link rel="stylesheet" href="./styles.css?v=15"><link rel="stylesheet" href="./modules.css">
 </head>
 <body>
   <div id="app-splash" class="app-splash" aria-hidden="true"><div class="splash-brand"><span class="splash-mark">170</span></div><strong class="splash-title" aria-label="Asistencia escolar"><span aria-hidden="true">A</span><span aria-hidden="true">s</span><span aria-hidden="true">i</span><span aria-hidden="true">s</span><span aria-hidden="true">t</span><span aria-hidden="true">e</span><span aria-hidden="true">n</span><span aria-hidden="true">c</span><span aria-hidden="true">i</span><span aria-hidden="true">a</span></strong><span class="splash-caption">CBTIS 170 · Cada día cuenta</span></div>
@@ -26,7 +26,7 @@
       <button id="show-signup" type="button" class="secondary signup-link">Solicitar cuenta</button><button id="back-to-roles" type="button" class="secondary back-to-roles">Volver a elegir perfil</button>
     </section>
     <section id="signup" class="card login-card hidden">
-      <p class="eyebrow">REGISTRO</p><h2>Solicitar cuenta</h2><p class="muted">Dirección debe aprobar tu solicitud. Si eres alumno, se vinculará usando tu matrícula.</p>
+      <p class="eyebrow">REGISTRO</p><h2>Solicitar cuenta</h2><p class="muted">Dirección revisará y aprobará la solicitud. Si eres alumno, vincula tu matrícula escolar.</p>
       <form id="signup-form"><label>Nombre completo<input name="nombre" autocomplete="name" required maxlength="120"></label><label>Correo institucional<input name="email" type="email" autocomplete="email" required maxlength="254"></label><label>Tipo de cuenta<select name="rol" required><option value="">Selecciona…</option><option value="alumno">Alumno</option><option value="maestro">Maestro</option><option value="tutor">Tutor</option></select></label><label id="signup-matricula-wrap" class="hidden">Matrícula del alumno<input name="matricula" autocomplete="off" maxlength="40" inputmode="text"><small>Escribe la misma matrícula registrada por la institución.</small></label><label id="signup-especialidad-wrap" class="hidden">Especialidad / área<input name="especialidad" list="signup-specialty-list" autocomplete="off"><datalist id="signup-specialty-list"></datalist><small>Escribe un área registrada. No importa si omites los acentos.</small></label><label>Contraseña (mínimo 5 caracteres)<input name="password" type="password" autocomplete="new-password" minlength="5" required><small>Usa una clave única; recomendamos que sea más larga.</small></label><button type="submit">Solicitar cuenta</button><button id="cancel-signup" type="button" class="secondary">Volver</button><p id="signup-result" class="form-note" role="status"></p></form>
     </section>
     <section id="portal" class="hidden">
@@ -40,6 +40,6 @@
       </div></div>
     </section>
     <footer>CBTIS 170 <span>·</span> Información administrada de forma segura por la institución</footer>
-  </main><div id="qr-notice" class="qr-notice" role="status" aria-live="polite"></div><script type="module" src="./app.js"></script><script src="/pwa.js" defer></script>
+  </main><div id="qr-notice" class="qr-notice" role="status" aria-live="polite"></div><script type="module" src="./app.js?v=15"></script><script src="/pwa.js" defer></script>
 </body>
 </html>

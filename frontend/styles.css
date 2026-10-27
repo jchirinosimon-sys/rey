@@ -91,13 +91,6 @@ body{background:radial-gradient(ellipse at 4% 0%,#f2e5df 0,transparent 31%),#fbf
 @media(max-width:720px){.topbar{margin-left:-15px;margin-right:-15px;padding:0 15px}.role-selection{margin-top:28px}.role-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.role-card{min-height:145px;padding:17px}.role-intro h2{font-size:27px}.role-intro .muted{font-size:15px}.brand-mark{width:58px;height:58px;font-size:17px}.splash-brand{width:165px;height:156px}}
 @media(max-width:420px){.role-grid{grid-template-columns:1fr}.role-card{min-height:110px;grid-template-columns:38px 1fr;align-content:center;align-items:center;gap:5px 12px}.role-icon{grid-row:span 2}.role-card span:last-child{grid-column:2}}
 
-.nav-more{margin-top:9px;padding-top:8px;border-top:1px solid var(--line)}
-.nav-more summary{padding:9px 10px;color:#66776e;font-size:12px;font-weight:650;cursor:pointer;list-style:none;border-radius:8px}
-.nav-more summary::-webkit-details-marker{display:none}
-.nav-more summary::after{content:'+';float:right;color:#89968f;font-size:15px;line-height:12px}
-.nav-more[open] summary::after{content:'−'}
-.nav-more summary:hover{background:#f3f7f4;color:var(--green)}
-.nav-more .nav-heading{display:block}
 #portal .welcome .eyebrow{color:var(--profile-accent,#176b58)}
 #portal .sidebar{border-top:3px solid var(--profile-accent,#176b58)}
 #portal .nav-link.active{background:var(--profile-soft,#eaf4ee);color:var(--profile-accent,#176b58)}
@@ -106,3 +99,74 @@ body{background:radial-gradient(ellipse at 4% 0%,#f2e5df 0,transparent 31%),#fbf
 #portal.role-maestro{--profile-accent:#18796b;--profile-soft:#e7f4f1}
 #portal.role-tutor{--profile-accent:#9a5c78;--profile-soft:#f8edf2}
 #portal.role-alumno{--profile-accent:#ad7830;--profile-soft:#f8f1e5}
+
+#portal{--profile-accent:#315b87;--profile-soft:#eaf1f8;display:grid;grid-template-columns:246px minmax(0,1fr);grid-template-rows:auto auto 1fr;gap:0 22px;color:#182a3d}
+#portal>.welcome{grid-area:1/1/2/3}
+#portal>#dashboard-content{grid-area:2/2/3/3;min-width:0}
+#portal .workspace{display:contents}
+#portal .sidebar{grid-area:2/1/4/2;align-self:start;position:sticky;top:18px}
+#portal .main-column{grid-area:3/2/4/3;min-width:0}
+#portal .welcome{align-items:center;margin:0 0 24px;padding:24px 28px;background:#fff;border:1px solid #e6ebf0;border-radius:20px;box-shadow:0 12px 32px #1f34470a}
+#portal .welcome h2{color:#172b40;font-size:30px}
+#portal .welcome .muted{color:#718096}
+#portal .welcome-actions{display:flex;align-items:center;gap:12px}
+#portal .welcome-actions>button{background:#f4f7fa;color:#374d63;border:1px solid #e1e8ef}
+#portal .welcome-actions>button:hover{background:#e8eef5;box-shadow:none}
+#portal .workspace{grid-template-columns:246px minmax(0,1fr);gap:22px}
+#portal .sidebar{padding:18px 12px;background:linear-gradient(180deg,#172e47,#102239);border:0;border-radius:18px;box-shadow:0 16px 36px #152b431c}
+#portal .sidebar>.eyebrow{padding:3px 11px 12px;color:#a8bed2;letter-spacing:.16em}
+#portal .sidebar nav{gap:5px}
+#portal .nav-heading{padding:7px 12px;color:#9eb3c8}
+#portal .nav-link{min-height:43px;padding:10px 12px;border-radius:11px;color:#d4dfeb;font-size:13px;font-weight:550}
+#portal .nav-link:hover{background:#ffffff12;color:#fff;box-shadow:none}
+#portal .nav-link.active{background:var(--profile-accent);color:#fff;box-shadow:0 7px 16px #08172535}
+#portal .nav-icon{width:26px;height:26px;border-radius:8px;background:#ffffff13;color:#e5edf5}
+#portal .nav-link.active .nav-icon{background:#ffffff26}
+#portal .main-column{display:grid;gap:16px;align-content:start}
+#portal .module-card,#portal #account-admin,#portal #record-admin,#portal #settings-admin{margin:0;padding:24px 26px;background:#fff;border:1px solid #e6ebf0;border-radius:18px;box-shadow:0 12px 32px #1f34470a}
+#portal .section-heading h3,#portal .module-card h3{color:#1b3045;font-size:18px}
+#portal .section-heading .eyebrow,#portal .module-kicker{color:var(--profile-accent)}
+#portal .metric-grid{gap:13px}
+#portal .dashboard-section{margin:0 0 15px;padding:19px 21px;background:#fff;border:1px solid #e6ebf0;border-radius:17px;box-shadow:0 10px 26px #1f344708}
+#portal .dashboard-section-heading h3{margin:0;color:#1b3045;font-size:16px}
+#portal .dashboard-section-heading p{margin:5px 0 15px;color:#718297;font-size:12px}
+#portal .metric-card{padding:18px;border:1px solid #e6ebf0;border-radius:16px;box-shadow:0 6px 18px #1f344708}
+#portal .metric-top{color:#687c90}
+#portal .metric-icon,#portal .empty-icon{background:var(--profile-soft);color:var(--profile-accent)}
+#portal .metric-card>strong{color:#1d344b}
+#portal .data-row{padding:15px 16px;border:1px solid #e8edf2;border-radius:13px;box-shadow:0 3px 12px #1f344706}
+#portal .data-row:hover{background:#fbfcfe;border-color:#d5e0eb}
+#portal .data-row-main strong{color:#213a52;font-size:14px}
+#portal .data-row-main span,#portal .data-detail{color:#718297;font-size:12px}
+#portal .status-badge{padding:6px 10px}
+#portal input,#portal select,#portal textarea{border-color:#dce4ec;border-radius:11px;color:#1c3147}
+#portal input:focus,#portal select:focus,#portal textarea:focus{border-color:var(--profile-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--profile-accent) 15%,transparent)}
+#portal .form-grid{gap:17px}
+#portal .form-grid label,#portal label{color:#455c71}
+#portal .form-grid button,#portal .main-column .list button{background:var(--profile-accent)}
+#portal .form-grid button:hover,#portal .main-column .list button:hover{filter:brightness(.92);box-shadow:0 6px 16px #142b4020}
+#portal .secondary,#portal .icon-button{background:#f5f7fa;color:#435a70;border-color:#e0e7ee}
+#portal .secondary:hover,#portal .icon-button:hover{background:#eaf0f6;color:#233f5c;box-shadow:none}
+#portal .form-note{color:#667e94}
+#portal.role-direccion{--profile-accent:#315b87;--profile-soft:#eaf1f8}
+#portal.role-maestro{--profile-accent:#167b70;--profile-soft:#e7f4f1}
+#portal.role-tutor{--profile-accent:#985573;--profile-soft:#f7edf2}
+#portal.role-alumno{--profile-accent:#a56f27;--profile-soft:#f8f1e5}
+@media(max-width:1050px){#portal .workspace{grid-template-columns:216px minmax(0,1fr)}}
+@media(max-width:720px){
+  #portal{display:block}
+  #portal .workspace{display:grid;grid-template-columns:1fr}
+  #portal .sidebar,#portal .main-column{grid-area:auto}
+  #portal .sidebar{position:static}
+  #portal .welcome{align-items:flex-start;padding:20px;margin-bottom:16px}
+  #portal .welcome h2{font-size:25px}
+  #portal .workspace{grid-template-columns:1fr;gap:14px}
+  #portal .sidebar{padding:9px;border-radius:14px}
+  #portal .sidebar>.eyebrow{display:none}
+  #portal .sidebar nav{flex-direction:row;overflow-x:auto;scrollbar-width:thin}
+  #portal .nav-heading{display:none}
+  #portal .nav-link{flex:0 0 auto;min-height:40px;padding:8px 11px}
+  #portal .nav-link>span:last-child{white-space:nowrap}
+  #portal .module-card,#portal #account-admin,#portal #record-admin,#portal #settings-admin{padding:18px}
+}
+@media(max-width:480px){#portal .welcome{gap:12px;padding:17px}#portal .welcome-actions{flex-wrap:wrap;justify-content:flex-end}#portal .welcome-actions>button{padding:9px 10px}#portal .form-grid{grid-template-columns:1fr}}
