@@ -2,16 +2,28 @@
 <html lang="es">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#a51e23"><meta name="description" content="Asistencia escolar sencilla, rápida y segura."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Asistencia</title><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="/icons/dgeti-app-192.png"><link rel="apple-touch-icon" href="/icons/dgeti-app-192.png"><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./modules.css">
+  <meta name="theme-color" content="#123c68"><meta name="description" content="Asistencia escolar segura para la comunidad del CBTIS 170."><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Asistencia escolar | CBTIS 170</title><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="/icons/dgeti-app-192.png"><link rel="apple-touch-icon" href="/icons/dgeti-app-192.png"><link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./modules.css">
 </head>
 <body>
-  <div id="app-splash" class="app-splash" aria-hidden="true"><div class="splash-brand"><img src="/icons/dgeti-logo.png" alt="Logotipo oficial de DGETI"></div><strong class="splash-title" aria-label="Asistencia"><span aria-hidden="true">A</span><span aria-hidden="true">s</span><span aria-hidden="true">i</span><span aria-hidden="true">s</span><span aria-hidden="true">t</span><span aria-hidden="true">e</span><span aria-hidden="true">n</span><span aria-hidden="true">c</span><span aria-hidden="true">i</span><span aria-hidden="true">a</span></strong><span class="splash-caption">Cada día cuenta</span></div>
+  <div id="app-splash" class="app-splash" aria-hidden="true"><div class="splash-brand"><span class="splash-mark">170</span></div><strong class="splash-title" aria-label="Asistencia escolar"><span aria-hidden="true">A</span><span aria-hidden="true">s</span><span aria-hidden="true">i</span><span aria-hidden="true">s</span><span aria-hidden="true">t</span><span aria-hidden="true">e</span><span aria-hidden="true">n</span><span aria-hidden="true">c</span><span aria-hidden="true">i</span><span aria-hidden="true">a</span></strong><span class="splash-caption">CBTIS 170 · Cada día cuenta</span></div>
   <main class="shell">
-    <header class="topbar"><a class="brand" href="/"><img class="brand-mark" src="/icons/dgeti-logo.png" alt="Logotipo oficial de DGETI"><div><p class="eyebrow">DGETI · PLATAFORMA ESCOLAR</p><h1>Asistencia</h1></div></a><div class="topbar-actions"><button id="push-notifications" class="secondary hidden" type="button">Activar notificaciones</button><button id="install-app" class="install-app hidden" type="button">Instalar Asistencia</button><div id="session-indicator" class="session-indicator hidden"><span class="online-dot"></span> Sesión protegida</div></div></header>
-    <section id="login" class="card login-card">
-      <p class="eyebrow">ACCESO SEGURO</p><h2>Bienvenido</h2><p class="muted">Inicia sesión con tu cuenta institucional.</p>
+    <header class="topbar"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">170</span><div><p class="eyebrow">CBTIS 170 · PLATAFORMA ESCOLAR</p><h1>Asistencia escolar</h1></div></a><div class="topbar-actions"><button id="push-notifications" class="secondary hidden" type="button">Activar notificaciones</button><button id="install-app" class="install-app hidden" type="button">Instalar Asistencia</button><div id="session-indicator" class="session-indicator hidden"><span class="online-dot"></span> Sesión protegida</div></div></header>
+    <section id="role-selection" class="role-selection" aria-labelledby="role-selection-title">
+      <div class="role-intro"><p class="eyebrow">COMUNIDAD ESCOLAR</p><h2 id="role-selection-title">¿Cómo quieres ingresar?</h2><p class="muted">Elige tu perfil para continuar.</p></div>
+      <p id="role-selection-error" class="error" role="alert"></p>
+      <div class="role-grid">
+        <button class="role-card" type="button" data-login-mode="alumno"><span class="role-icon" aria-hidden="true">🎓</span><strong>Alumno</strong><span>Credencial y asistencia</span></button>
+        <button class="role-card" type="button" data-login-mode="tutor"><span class="role-icon" aria-hidden="true">👨‍👩‍👧</span><strong>Padre o tutor</strong><span>Asistencia, faltas y permisos</span></button>
+        <button class="role-card" type="button" data-login-mode="maestro"><span class="role-icon" aria-hidden="true">📘</span><strong>Maestro</strong><span>Listas de clase y asistencia</span></button>
+        <button class="role-card" type="button" data-login-mode="direccion"><span class="role-icon" aria-hidden="true">🏫</span><strong>Dirección</strong><span>Alumnos, avisos, permisos y faltas</span></button>
+        <button class="role-card" type="button" data-login-mode="entrada"><span class="role-icon" aria-hidden="true">📷</span><strong>Entrada</strong><span>Registro de asistencia con QR</span></button>
+      </div>
+      <p class="role-security-note">Acceso institucional seguro · La información se guarda en la cuenta escolar.</p>
+    </section>
+    <section id="login" class="card login-card hidden">
+      <p class="eyebrow">ACCESO SEGURO</p><h2 id="login-role-title">Bienvenido</h2><p id="login-role-description" class="muted">Inicia sesión con tu cuenta institucional.</p>
       <form id="login-form"><label>Correo institucional<input type="email" name="email" autocomplete="username" required></label><label>Contraseña<input type="password" name="password" autocomplete="current-password" required></label><button type="submit">Iniciar sesión</button><p id="login-error" class="error" role="alert"></p><p class="form-note">El sistema registra el correo y el resultado del acceso; nunca guarda la contraseña escrita.</p></form>
-      <button id="show-signup" type="button" class="secondary signup-link">Crear cuenta</button>
+      <button id="show-signup" type="button" class="secondary signup-link">Solicitar cuenta</button><button id="back-to-roles" type="button" class="secondary back-to-roles">Volver a elegir perfil</button>
     </section>
     <section id="signup" class="card login-card hidden">
       <p class="eyebrow">REGISTRO</p><h2>Solicitar cuenta</h2><p class="muted">Dirección debe aprobar tu solicitud. Si eres alumno, se vinculará usando tu matrícula.</p>
@@ -27,8 +39,7 @@
         <section class="card module-card"><div class="section-heading"><div><p class="eyebrow" id="module-kicker">RESUMEN</p><h3 id="list-title">Información</h3></div><div class="list-tools"><input id="record-search" class="search-box" type="search" placeholder="Buscar registros" aria-label="Buscar registros"><button id="refresh" class="icon-button" aria-label="Actualizar">↻</button></div></div><div id="list" class="list muted">Selecciona un apartado para consultar tus datos autorizados.</div></section>
       </div></div>
     </section>
-    <footer>Asistencia <span>·</span> Información administrada de forma segura por la institución</footer>
+    <footer>CBTIS 170 <span>·</span> Información administrada de forma segura por la institución</footer>
   </main><div id="qr-notice" class="qr-notice" role="status" aria-live="polite"></div><script type="module" src="./app.js"></script><script src="/pwa.js" defer></script>
 </body>
 </html>
-

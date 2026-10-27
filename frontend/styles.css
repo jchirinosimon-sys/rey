@@ -66,3 +66,27 @@ body{background:radial-gradient(ellipse at 4% 0%,#f2e5df 0,transparent 31%),#fbf
 @media(max-width:620px){.user-role-section{padding:13px}.user-name-row{flex-wrap:wrap}.user-name-row strong{flex-basis:100%;padding:4px 0}.permit-card{padding:14px}.permit-card-top{flex-direction:column}.permit-review-actions{display:grid;grid-template-columns:1fr 1fr}.permit-review-actions button{padding:10px 8px}.signature-canvas{height:120px}.credential-qr-image{width:136px;height:136px}}
 
 .nav-link.active{background:#f8ebe7;color:#a51e23}.nav-link:hover{background:#fcf4f1;color:#8e181d}input:focus,select:focus,textarea:focus{border-color:#c46c5e;box-shadow:0 0 0 3px #a51e2318}
+
+.topbar{margin-left:-42px;margin-right:-42px;padding:0 42px;background:#123c68;border-bottom:0;color:#fff}
+.topbar .brand h1{color:#fff}
+.topbar .eyebrow{color:#e0c58f}
+.brand-mark{display:grid;place-items:center;flex:none;color:#123c68;background:#fff;border:2px solid #d6bd8b;border-radius:50%;font:800 21px 'Segoe UI'}
+.role-selection{max-width:1060px;margin:34px auto 0}
+.role-intro h2{margin:0;color:#153a61;font:800 32px 'Segoe UI';letter-spacing:-.035em}
+.role-intro .muted{margin:7px 0 20px;font-size:17px}
+.role-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.role-card{min-height:166px;display:grid;align-content:center;justify-items:start;gap:12px;padding:22px;border:1px solid #d7e0e8;border-radius:13px;background:#fff;color:#203449;text-align:left;box-shadow:0 5px 16px #153a610a;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.role-card:hover{transform:translateY(-2px);border-color:#7292b2;background:#fff;color:#153a61;box-shadow:0 10px 24px #153a6117}
+.role-icon{font-size:25px;line-height:1}
+.role-card strong{font-size:19px;color:#172f49}
+.role-card span:last-child{font-size:14px;font-weight:400;color:#73817b}
+.role-security-note{margin:17px 0;color:#718096;font-size:13px}
+.login-card{margin-top:5vh}
+.back-to-roles{width:100%;margin-top:9px}
+.splash-brand{display:grid;place-items:center}
+.splash-mark{display:grid;place-items:center;width:108px;height:108px;border:4px solid #d6bd8b;border-radius:50%;background:#fff;color:#123c68;font:800 34px 'Segoe UI';box-shadow:0 15px 42px #061d18a0}
+.splash-brand::after{border-radius:50%}
+.app-splash{background:linear-gradient(125deg,#0c2945 0%,#123c68 48%,#b58a48 100%)}
+@media(max-width:1050px){.topbar{margin-left:-25px;margin-right:-25px;padding:0 25px}}
+@media(max-width:720px){.topbar{margin-left:-15px;margin-right:-15px;padding:0 15px}.role-selection{margin-top:28px}.role-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.role-card{min-height:145px;padding:17px}.role-intro h2{font-size:27px}.role-intro .muted{font-size:15px}.brand-mark{width:58px;height:58px;font-size:17px}.splash-brand{width:165px;height:156px}}
+@media(max-width:420px){.role-grid{grid-template-columns:1fr}.role-card{min-height:110px;grid-template-columns:38px 1fr;align-content:center;align-items:center;gap:5px 12px}.role-icon{grid-row:span 2}.role-card span:last-child{grid-column:2}}

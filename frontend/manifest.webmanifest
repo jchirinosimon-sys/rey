@@ -1,14 +1,14 @@
 {
   "id": "/",
-  "name": "Asistencia · Gestión Escolar",
-  "short_name": "Asistencia",
-  "description": "Asistencia escolar sencilla, rápida y segura.",
+  "name": "Asistencia escolar · CBTIS 170",
+  "short_name": "CBTIS 170",
+  "description": "Asistencia escolar segura para la comunidad del CBTIS 170.",
   "lang": "es",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#fffaf7",
-  "theme_color": "#a51e23",
+  "theme_color": "#123c68",
   "prefer_related_applications": false,
   "icons": [
     {

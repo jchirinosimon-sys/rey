@@ -33,9 +33,17 @@ const fieldGuides={
 };
 const formGuides={alumnos:'Crea una ficha escolar. La matrícula identifica al alumno y debe ser única.',maestros:'Registra al docente; después podrás vincularlo a horarios y a su cuenta.',tutores:'Registra los datos de contacto del tutor antes de crear el vínculo familiar.',grupos:'Define el grupo y ciclo; los IDs de semestre y especialidad deben existir previamente.',especialidades:'Registra el nombre oficial de la especialidad y una clave única si tu institución la usa.',semestres:'Indica el nombre y el orden en que aparece dentro del ciclo.',materias:'Usa el nombre oficial de la asignatura y su clave institucional.',relaciones_tutores:'Vincula dos fichas ya creadas usando sus IDs. El vínculo autoriza al tutor a consultar información del alumno.',inscripciones:'Asigna una ficha de alumno existente a un grupo existente y especifica el ciclo escolar.',horarios:'Vincula materia, maestro y grupo existentes. El sistema rechazará cruces de horario.',calendario_escolar:'Marca la fecha como lectiva o describe el evento; solo los días lectivos permiten abrir jornadas.',periodos_evaluacion:'Define las fechas y los límites de calificación del periodo.',avisos_escolares:'Escribe el anuncio institucional y hasta qué fecha debe permanecer visible.',usuarios:'Crea una cuenta para una ficha existente. El ID de persona vincula la cuenta con su expediente.'};
 const roleName = {direccion:'Dirección',maestro:'Maestro',alumno:'Alumno',tutor:'Tutor'};
+const loginModes = {
+  alumno:{role:'alumno',title:'Alumno',signup:true},
+  tutor:{role:'tutor',title:'Padre o tutor',signup:true},
+  maestro:{role:'maestro',title:'Maestro',signup:true},
+  direccion:{role:'direccion',title:'Dirección',signup:false},
+  entrada:{role:'alumno',title:'Entrada',signup:false,destination:'asistencias'}
+};
 const exportablePages=new Set(['alumnos','maestros','tutores','grupos','materias','horarios','asistencias','listas_asistencia','faltas','retardos','justificaciones','calificaciones','boletas','mensajes','avisos_escolares']);
 let currentPage = 'dashboard';
 let selectedFamilyStudent='';
+let selectedLoginMode=null;
 let qrRotationTimer;
 let editingId=null;
 let currentOffset=0,searchTerm='';
@@ -100,16 +108,31 @@ async function submitPendingAttendance(user) {
   showAttendanceNotice('QR listo. Pulsa «Registrar entrada» para guardar la entrada.');
 }
 function goLogin(message='') {
-  localStorage.removeItem(tokenKey); $('#portal').classList.add('hidden'); $('#login').classList.remove('hidden'); $('#session-indicator').classList.add('hidden');
-  $('#login-error').textContent = message;
+  localStorage.removeItem(tokenKey); $('#portal').classList.add('hidden'); $('#signup').classList.add('hidden'); $('#login').classList.add('hidden'); $('#role-selection').classList.remove('hidden'); $('#session-indicator').classList.add('hidden'); selectedLoginMode=null;
+  $('#login-error').textContent = '';$('#role-selection-error').textContent=message;
+  if(incomingQr)openLoginMode('alumno');
 }
+function openLoginMode(modeName) {
+  const mode=loginModes[modeName];if(!mode)return;
+  selectedLoginMode=modeName;
+  $('#role-selection').classList.add('hidden');$('#signup').classList.add('hidden');$('#login').classList.remove('hidden');
+  $('#login-form').reset();
+  $('#login-role-title').textContent=modeName==='entrada'?'Registro de entrada':`Acceso de ${mode.title}`;
+  $('#login-role-description').textContent=modeName==='entrada'?'Inicia sesión con tu cuenta de alumno para registrar la entrada mediante QR.':`Inicia sesión con tu cuenta institucional de ${mode.title.toLowerCase()}.`;
+  $('#show-signup').classList.toggle('hidden',!mode.signup);
+  $('#login-error').textContent='';$('#role-selection-error').textContent='';
+}
+document.querySelectorAll('[data-login-mode]').forEach(button=>button.addEventListener('click',()=>openLoginMode(button.dataset.loginMode)));
+$('#back-to-roles').addEventListener('click',()=>{
+  $('#login-form').reset();$('#login-error').textContent='';$('#login').classList.add('hidden');$('#role-selection').classList.remove('hidden');selectedLoginMode=null;
+});
 function metric(label,value,icon) {
   const item=document.createElement('article');item.className='metric-card';
   const top=document.createElement('div');top.className='metric-top';const name=document.createElement('span');name.textContent=label;const mark=document.createElement('span');mark.className='metric-icon';mark.textContent=icon;
   const amount=document.createElement('strong');amount.textContent=Number(value).toLocaleString('es-GT');item.append(top,amount);top.append(name,mark);return item;
 }
 async function showPortal(user) {
-  $('#login').classList.add('hidden');$('#portal').classList.remove('hidden');$('#session-indicator').classList.remove('hidden');
+  $('#role-selection').classList.add('hidden');$('#login').classList.add('hidden');$('#portal').classList.remove('hidden');$('#session-indicator').classList.remove('hidden');
   $('#welcome-kicker').textContent=`PORTAL DE ${roleName[user.rol]?.toUpperCase() ?? user.rol.toUpperCase()}`;
   $('#welcome-title').textContent=`Hola, ${user.nombre.split(' ')[0]}`;
   $('#welcome-subtitle').textContent=user.rol==='direccion'?'Aquí tienes la actividad y administración de tu institución.':'Consulta tu información escolar y mantente al día.';
@@ -295,9 +318,9 @@ function renderResolutionActions(records){for(const request of records.filter(x=
 function renderJustificationRequestAction(){const box=actionBox('Solicitar justificación','La solicitud será revisada por dirección. Usa el ID del registro mostrado en faltas o retardos.');const form=document.createElement('form');form.className='inline-form';const id=document.createElement('input');id.name='registroId';id.placeholder='ID del registro';id.required=true;const reason=document.createElement('textarea');reason.name='motivo';reason.placeholder='Motivo de la solicitud';reason.required=true;reason.minLength=5;const submit=document.createElement('button');submit.textContent='Enviar solicitud';const status=document.createElement('span');status.className='form-note';form.onsubmit=async e=>{e.preventDefault();const values=Object.fromEntries(new FormData(form));values.alumnoId=selectedFamilyStudent;try{await api('/api/justificaciones',{method:'POST',body:JSON.stringify(values)});status.textContent='Solicitud enviada.';form.reset();}catch(error){status.textContent=error.message}};form.append(id,reason,submit,status);box.append(form);$('#list').append(box)}
 function renderOpenListActions(records){const schedules=records.filter(x=>x.id&&x.horaInicio);if(!schedules.length)return;const box=actionBox('Lista de asistencia','Abre la lista desde la sesión asignada en tu horario.');for(const record of schedules){const button=document.createElement('button');button.className='row-action';button.textContent=`Hacer lista · ${record.horaInicio} · ${record.materiaNombre??record.materiaId}`;button.onclick=async()=>{button.disabled=true;try{await api('/api/listas_asistencia',{method:'POST',body:JSON.stringify({horarioId:record.id})});await loadPage('listas_asistencia','Listas de clase',document.querySelector('.nav-link.active'));}catch(error){alert(error.message);button.disabled=false}};box.append(button)}$('#list').append(box);}
 function renderCloseListActions(records){for(const list of records.filter(x=>x.estado==='abierta')){const box=actionBox(`Cerrar lista · ${list.fecha}`,`Confirma presentes, retardos y ausencias para ${list.alumnos?.length??0} alumnos.`);const form=document.createElement('form');form.className='attendance-list';for(const student of list.alumnos??[]){const row=document.createElement('label');row.className='attendance-person';const name=document.createElement('span');name.textContent=student.nombreSnapshot;const select=document.createElement('select');select.name=student.alumnoId;for(const [value,label] of [['pendiente','Seleccionar estado'],['presente','Presente'],['retardo','Retardo'],['ausente','Ausente']]){const option=document.createElement('option');option.value=value;option.textContent=label;option.selected=value==='pendiente';select.append(option)}row.append(name,select);form.append(row)}const submit=document.createElement('button');submit.textContent='Cerrar lista y guardar';const hint=document.createElement('span');hint.className='form-note';form.append(submit,hint);form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;const alumnos=Array.from(form.querySelectorAll('select')).map(x=>({alumnoId:x.name,estado:x.value}));try{await api(`/api/listas_asistencia/${list.id}/cerrar`,{method:'POST',body:JSON.stringify({alumnos})});hint.textContent='Lista cerrada. Faltas y retardos quedaron guardados.';await loadPage('listas_asistencia','Listas de clase',document.querySelector('.nav-link.active'));}catch(error){hint.textContent=error.message;submit.disabled=false}};box.append(form);$('#list').append(box);}}
-$('#login-form').addEventListener('submit',async event=>{event.preventDefault();$('#login-error').textContent='';const submit=event.currentTarget.querySelector('button');submit.disabled=true;try{const result=await api('/api/auth/login',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(event.currentTarget)))});localStorage.setItem(tokenKey,result.token);me=result.usuario;await showPortal(me);await submitPendingAttendance(me);}catch(error){$('#login-error').textContent=error.message;}finally{submit.disabled=false;}});
+$('#login-form').addEventListener('submit',async event=>{event.preventDefault();$('#login-error').textContent='';const submit=event.currentTarget.querySelector('button');submit.disabled=true;try{const mode=loginModes[selectedLoginMode];if(!mode)throw new Error('Elige primero el perfil con el que deseas ingresar.');const result=await api('/api/auth/login',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(event.currentTarget)))});if(result.usuario.rol!==mode.role)throw new Error(`Esta cuenta no corresponde al perfil de ${mode.title.toLowerCase()}.`);localStorage.setItem(tokenKey,result.token);me=result.usuario;await showPortal(me);if(mode.destination){const nav=[...document.querySelectorAll('.nav-link')].find(button=>button.textContent.trim()==='Entradas');await loadPage(mode.destination,'Entradas',nav);}await submitPendingAttendance(me);}catch(error){$('#login-error').textContent=error.message;}finally{submit.disabled=false;}});
 $('#push-notifications').addEventListener('click',enablePushNotifications);
-$('#show-signup').onclick=()=>{$('#login').classList.add('hidden');$('#signup').classList.remove('hidden');$('#signup-result').textContent='';};
+$('#show-signup').onclick=()=>{const mode=loginModes[selectedLoginMode];if(!mode?.signup)return;signupRole.value=mode.role;syncSignupMatricula();$('#login').classList.add('hidden');$('#signup').classList.remove('hidden');$('#signup-result').textContent='';};
 $('#cancel-signup').onclick=()=>{$('#signup').classList.add('hidden');$('#login').classList.remove('hidden');};
 async function loadSpecialtyChoices(){try{const areas=await api('/api/auth/especialidades');for(const id of ['signup-specialty-list','account-specialty-list']){const list=document.getElementById(id);if(list)list.replaceChildren(...areas.map(area=>{const option=document.createElement('option');option.value=area.nombre;return option}))}}catch{}}
 loadSpecialtyChoices();
@@ -309,4 +332,4 @@ $('#account-form').addEventListener('submit',async event=>{event.preventDefault(
 $('#reset-password-form').addEventListener('submit',async event=>{event.preventDefault();const values=Object.fromEntries(new FormData(event.currentTarget));$('#reset-result').textContent='Actualizando…';try{await api(`/api/usuarios/${encodeURIComponent(values.userId)}/password`,{method:'PATCH',body:JSON.stringify({password:values.password})});$('#reset-result').textContent='Contraseña restablecida.';event.currentTarget.reset();}catch(error){$('#reset-result').textContent=error.message;}});
 $('#settings-form').addEventListener('submit',async event=>{event.preventDefault();const values=Object.fromEntries(new FormData(event.currentTarget));$('#settings-result').textContent='Guardando…';try{await api('/api/configuracion',{method:'PUT',body:JSON.stringify(values)});$('#settings-result').textContent='Configuración guardada.';}catch(error){$('#settings-result').textContent=error.message;}});
 $('#record-form').addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget;const record={};for(const [key,value] of new FormData(form))record[key]=value;for(const input of form.querySelectorAll('input[type=checkbox]'))record[input.name]=input.checked;for(const key of ['orden','escalaMin','escalaMax','diaSemana'])if(key in record)record[key]=Number(record[key]);if('jornadas'in record)record.jornadas=record.jornadas.split(',').map(x=>x.trim()).filter(Boolean);$('#record-result').textContent='Guardando…';try{const result=editingId?await api(`/api/${currentPage}/${encodeURIComponent(editingId)}`,{method:'PATCH',body:JSON.stringify(record)}):await api(`/api/${currentPage}`,{method:'POST',body:JSON.stringify(record)});const savedMessage=editingId?'Cambios guardados.':'Registro guardado.';$('#record-result').textContent=savedMessage+(result.notificacionesPush?' '+pushReportText(result.notificacionesPush):'');editingId=null;form.reset();await loadPage(currentPage,labels[currentPage],document.querySelector('.nav-link.active'));}catch(error){$('#record-result').textContent=error.message;}});
-if(localStorage.getItem(tokenKey)){api('/api/auth/me').then(async user=>{me=user;await showPortal(user);await submitPendingAttendance(user);}).catch(()=>goLogin('Tu sesión venció. Inicia sesión nuevamente.'));}
+if(localStorage.getItem(tokenKey)){api('/api/auth/me').then(async user=>{me=user;await showPortal(user);await submitPendingAttendance(user);}).catch(()=>goLogin('Tu sesión venció. Inicia sesión nuevamente.'));}else if(incomingQr)openLoginMode('alumno');
