@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#123c68">
+    <meta name="description" content="Demostración local del sistema de control de asistencia escolar del CBTIS 170.">
+    <title>Asistencia escolar | CBTIS 170</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a class="salto-contenido" href="#contenido">Ir al contenido</a>
+    <header class="encabezado">
+        <div class="encabezado-interior">
+            <div class="marca" aria-label="CBTIS 170, control escolar">
+                <span class="marca-sello" aria-hidden="true">170</span>
+                <div>
+                    <p class="marca-institucion">CBTIS 170</p>
+                    <h1>Asistencia escolar</h1>
+                </div>
+            </div>
+            <p class="encabezado-descripcion">Información y seguimiento para la comunidad escolar</p>
+            <button class="instalar-app" id="instalarApp" type="button">Instalar en Chrome</button>
+        </div>
+    </header>
+
+    <main id="contenido" class="contenedor">
+        <aside class="aviso-demo" role="note">
+            <strong>Prototipo de demostración</strong>
+            <span>Los datos se guardan solo en este navegador. Usa únicamente información ficticia y no subas documentos sensibles.</span>
+        </aside>
+        <p id="estadoInstalacion" class="texto-ayuda" aria-live="polite"></p>
+
+        <section id="escuela" class="modulo" aria-label="Acceso de Dirección">
+            <div class="tarjeta">
+                <h2>Módulo de Dirección</h2>
+                <input type="email" id="usuarioEscuela" placeholder="Correo electrónico">
+                <input type="password" id="passwordEscuela" placeholder="Contraseña">
+                <button class="accion" type="button">Iniciar sesión</button>
+                <div id="mensajeEscuela" aria-live="polite"></div>
+            </div>
+            <div class="tarjeta">
+                <h2>Registrar entrada con QR</h2>
+                <p>El personal puede escanear el código de la credencial digital del alumno.</p>
+                <button class="accion" id="iniciarEscaner" type="button">Activar cámara y escanear</button>
+                <p class="texto-ayuda">La cámara requiere HTTPS o localhost y permiso del navegador. Si no está disponible, registra la matrícula manualmente.</p>
+                <div id="lector"></div>
+                <div id="resultadoQR" aria-live="polite"></div>
+                <h3>O registra la matrícula</h3>
+                <input type="text" id="matriculaManual" placeholder="Matrícula del alumno">
+                <button class="accion" id="registrarManual" type="button">Registrar entrada</button>
+            </div>
+            <div class="tarjeta">
+                <h2>Consulta de asistencia</h2>
+                <div class="estadisticas">
+                    <div class="estadistica"><strong id="totalAsistencias">0</strong><span>Entradas</span></div>
+                    <div class="estadistica"><strong id="asistenciaHoy">0</strong><span>Entradas hoy</span></div>
+                    <div class="estadistica"><strong id="totalEstudiantes">0</strong><span>Alumnos</span></div>
+                    <div class="estadistica"><strong id="totalFaltas">0</strong><span>Faltas</span></div>
+                    <div class="estadistica"><strong id="solicitudesPendientes">0</strong><span>Permisos pendientes</span></div>
+                </div>
+                <h3>Registros recientes</h3>
+                <div class="tabla-contenedor">
+                    <table>
+                        <thead><tr><th>Alumno</th><th>Grupo</th><th>Fecha</th><th>Hora</th></tr></thead>
+                        <tbody id="tablaAsistencias"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="estudiante" class="modulo" aria-label="Acceso de Alumno">
+            <div class="tarjeta">
+                <h2>Crear cuenta de alumno</h2>
+                <h3>Completa tus datos</h3>
+                <input type="text" id="nombreEstudiante" placeholder="Nombre completo">
+                <input type="text" id="matriculaEstudiante" placeholder="Matrícula">
+                <input type="text" id="grupoEstudiante" placeholder="Grupo">
+                <input type="text" id="tutorEstudiante" placeholder="Nombre del padre, madre o tutor">
+                <input type="password" id="passwordEstudiante" placeholder="Contraseña">
+                <button class="accion" type="button">Continuar</button>
+                <div id="registroEstudiante" aria-live="polite"></div>
+            </div>
+            <div class="tarjeta">
+                <h2>Iniciar sesión</h2>
+                <input type="email" id="loginMatricula" placeholder="Correo electrónico o matrícula">
+                <input type="password" id="loginPassword" placeholder="Contraseña">
+                <button class="accion" type="button">Iniciar sesión</button>
+                <div id="loginEstudianteMensaje" aria-live="polite"></div>
+            </div>
+            <div class="tarjeta">
+                <h2>Credencial digital</h2>
+                <div class="credencial">
+                    <p class="credencial-institucion">CBTIS 170 · CREDENCIAL ESCOLAR</p>
+                    <p id="credNombre">Nombre del alumno</p>
+                    <p>Matrícula: <strong id="credMatricula">--------</strong></p>
+                    <p>Grupo: <strong id="credGrupo">--------</strong></p>
+                    <div id="qrcode"></div>
+                    <p>Presenta este código en la entrada</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tutor" class="modulo" aria-label="Acceso de Padre o tutor">
+            <div class="tarjeta">
+                <h2>Crear cuenta de padre o tutor</h2>
+                <h3>Completa tus datos</h3>
+                <input type="text" id="nombreTutor" placeholder="Nombre completo">
+                <input type="email" id="emailTutor" placeholder="Correo electrónico">
+                <input type="text" id="hijoTutor" placeholder="Matrícula del alumno">
+                <input type="password" id="passwordTutor" placeholder="Contraseña">
+                <button class="accion" type="button">Continuar</button>
+                <div id="registroTutor" aria-live="polite"></div>
+            </div>
+            <div class="tarjeta">
+                <h2>Iniciar sesión</h2>
+                <input type="email" id="loginEmailTutor" placeholder="Correo electrónico">
+                <input type="password" id="loginPasswordTutor" placeholder="Contraseña">
+                <button class="accion" type="button">Iniciar sesión</button>
+                <div id="loginTutorMensaje" aria-live="polite"></div>
+            </div>
+            <div class="tarjeta">
+                <h2>Notificaciones</h2>
+                <div id="notificaciones"><div class="notificacion">Los avisos de la escuela aparecerán aquí.</div></div>
+            </div>
+            <div class="tarjeta">
+                <h2>Asistencia de mi hijo</h2>
+                <div id="resumenTutor" class="estadisticas" aria-label="Resumen de asistencia"></div>
+                <div class="tabla-contenedor">
+                    <table>
+                        <thead><tr><th>Alumno</th><th>Fecha</th><th>Hora</th><th>Estado</th></tr></thead>
+                        <tbody id="tablaTutor"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="pie">
+        <p>CBTIS 170 · Sistema de demostración para control escolar</p>
+    </footer>
+    <script src="app.js" defer></script>
+</body>
+</html>
