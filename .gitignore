@@ -1,0 +1,8 @@
+node_modules/
+backend/data/
+backups/
+.env
+.env.*
+!.env.example
+.vscode/
+*.tmp
