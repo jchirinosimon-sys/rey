@@ -4,8 +4,8 @@ import { randomUUID } from 'node:crypto';
 const storage = await createStorage(process.env);
 const email = process.env.BOOTSTRAP_ADMIN_EMAIL;
 const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
-if (!email || !password || password.length < 12) {
-  console.error('Define BOOTSTRAP_ADMIN_EMAIL y BOOTSTRAP_ADMIN_PASSWORD (mínimo 12 caracteres) antes de crear el administrador.');
+if (!email || !password || password.length < 5) {
+  console.error('Define BOOTSTRAP_ADMIN_EMAIL y BOOTSTRAP_ADMIN_PASSWORD (mínimo 5 caracteres) antes de crear el administrador.');
   process.exit(1);
 }
 const users = await storage.read('usuarios');

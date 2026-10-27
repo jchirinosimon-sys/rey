@@ -90,3 +90,19 @@ body{background:radial-gradient(ellipse at 4% 0%,#f2e5df 0,transparent 31%),#fbf
 @media(max-width:1050px){.topbar{margin-left:-25px;margin-right:-25px;padding:0 25px}}
 @media(max-width:720px){.topbar{margin-left:-15px;margin-right:-15px;padding:0 15px}.role-selection{margin-top:28px}.role-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.role-card{min-height:145px;padding:17px}.role-intro h2{font-size:27px}.role-intro .muted{font-size:15px}.brand-mark{width:58px;height:58px;font-size:17px}.splash-brand{width:165px;height:156px}}
 @media(max-width:420px){.role-grid{grid-template-columns:1fr}.role-card{min-height:110px;grid-template-columns:38px 1fr;align-content:center;align-items:center;gap:5px 12px}.role-icon{grid-row:span 2}.role-card span:last-child{grid-column:2}}
+
+.nav-more{margin-top:9px;padding-top:8px;border-top:1px solid var(--line)}
+.nav-more summary{padding:9px 10px;color:#66776e;font-size:12px;font-weight:650;cursor:pointer;list-style:none;border-radius:8px}
+.nav-more summary::-webkit-details-marker{display:none}
+.nav-more summary::after{content:'+';float:right;color:#89968f;font-size:15px;line-height:12px}
+.nav-more[open] summary::after{content:'−'}
+.nav-more summary:hover{background:#f3f7f4;color:var(--green)}
+.nav-more .nav-heading{display:block}
+#portal .welcome .eyebrow{color:var(--profile-accent,#176b58)}
+#portal .sidebar{border-top:3px solid var(--profile-accent,#176b58)}
+#portal .nav-link.active{background:var(--profile-soft,#eaf4ee);color:var(--profile-accent,#176b58)}
+#portal .nav-link:hover{color:var(--profile-accent,#176b58)}
+#portal.role-direccion{--profile-accent:#315b87;--profile-soft:#eaf1f8}
+#portal.role-maestro{--profile-accent:#18796b;--profile-soft:#e7f4f1}
+#portal.role-tutor{--profile-accent:#9a5c78;--profile-soft:#f8edf2}
+#portal.role-alumno{--profile-accent:#ad7830;--profile-soft:#f8f1e5}

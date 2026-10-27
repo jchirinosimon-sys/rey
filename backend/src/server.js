@@ -143,7 +143,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/auth/solicitudes') {
       const ip=req.socket.remoteAddress??'local',now=Date.now(),attempts=signupFailures.get(ip);if(attempts&&attempts.until>now&&attempts.count>=5)return json(res,429,{error:'Se alcanzó el límite de solicitudes. Intenta de nuevo más tarde.'});if(!attempts||attempts.until<=now)signupFailures.set(ip,{count:0,until:now+15*60_000});
       const input=await body(req),nombre=typeof input.nombre==='string'?input.nombre.trim():'',email=typeof input.email==='string'?input.email.trim().toLowerCase():'',password=input.password,rolSolicitado=input.rol,matricula=typeof input.matricula==='string'?input.matricula.trim():'';
-      if(nombre.length<2||nombre.length>120||!/^\S+@\S+\.\S+$/.test(email)||email.length>254||typeof password!=='string'||password.length<12||password.length>200||!['alumno','maestro','tutor'].includes(rolSolicitado)||(rolSolicitado==='alumno'&&(!matricula||matricula.length>40||typeof input.especialidad!=='string'||!input.especialidad.trim())))return json(res,400,{error:'Completa nombre, correo, tipo de cuenta, matrícula y especialidad si eres alumno, y una contraseña de 12 caracteres o más.'});
+      if(nombre.length<2||nombre.length>120||!/^\S+@\S+\.\S+$/.test(email)||email.length>254||typeof password!=='string'||password.length<5||password.length>200||!['alumno','maestro','tutor'].includes(rolSolicitado)||(rolSolicitado==='alumno'&&(!matricula||matricula.length>40||typeof input.especialidad!=='string'||!input.especialidad.trim())))return json(res,400,{error:'Completa nombre, correo, tipo de cuenta, matrícula y especialidad si eres alumno, y una contraseña de 5 caracteres o más.'});
       let especialidad=null;if(rolSolicitado==='alumno'){especialidad=(await storage.read('especialidades')).find(x=>x.activo!==false&&normalizeAreaName(x.nombre)===normalizeAreaName(input.especialidad));if(!especialidad)return json(res,400,{error:'La especialidad no coincide con un área activa. Revisa el nombre registrado con la institución.'});}
       const attemptState=signupFailures.get(ip);signupFailures.set(ip,{...attemptState,count:attemptState.count+1});
       const request={id:randomUUID(),nombre,email,rolSolicitado,...(rolSolicitado==='alumno'?{matricula,especialidadId:especialidad.id,especialidadNombre:especialidad.nombre}:{}),passwordHash:await hashPassword(password),estado:'pendiente',creadoEn:new Date().toISOString()};
@@ -295,7 +295,7 @@ const server = http.createServer(async (req, res) => {
       }
       const passwordMatch=url.pathname.match(/^\/api\/usuarios\/([^/]+)\/password$/);
       if(req.method==='PATCH'&&passwordMatch&&user.rol==='direccion'){
-        const input=await body(req);if(typeof input.password!=='string'||input.password.length<12)return json(res,400,{error:'La contraseña debe tener al menos 12 caracteres.'});const passwordHash=await hashPassword(input.password),rows=await storage.update('usuarios',items=>{const index=items.findIndex(x=>x.id===passwordMatch[1]);if(index<0)throw fail(404,'Cuenta no encontrada.');items[index]={...items[index],passwordHash,actualizadoEn:new Date().toISOString()};return items;});await audit(user,'restablecer_contraseña',passwordMatch[1]);const{passwordHash:_hash,...safe}=rows.find(x=>x.id===passwordMatch[1]);return json(res,200,safe);
+        const input=await body(req);if(typeof input.password!=='string'||input.password.length<5)return json(res,400,{error:'La contraseña debe tener al menos 5 caracteres.'});const passwordHash=await hashPassword(input.password),rows=await storage.update('usuarios',items=>{const index=items.findIndex(x=>x.id===passwordMatch[1]);if(index<0)throw fail(404,'Cuenta no encontrada.');items[index]={...items[index],passwordHash,actualizadoEn:new Date().toISOString()};return items;});await audit(user,'restablecer_contraseña',passwordMatch[1]);const{passwordHash:_hash,...safe}=rows.find(x=>x.id===passwordMatch[1]);return json(res,200,safe);
       }
       const stateMatch=url.pathname.match(/^\/api\/([^/]+)\/([^/]+)\/estado$/);
       if(req.method==='PATCH'&&stateMatch&&user.rol==='direccion'){
@@ -456,7 +456,7 @@ const server = http.createServer(async (req, res) => {
       if (match && req.method === 'POST' && match[1] === 'usuarios' && user.rol === 'direccion') {
         const input = await body(req);
         const email = typeof input.email === 'string' ? input.email.trim().toLowerCase() : '';
-        if (!email.includes('@') || typeof input.nombre !== 'string' || !input.nombre.trim() || !roles.includes(input.rol) || typeof input.password !== 'string' || input.password.length < 12) return json(res, 400, { error: 'Indica nombre, correo válido, rol y contraseña de al menos 12 caracteres.' });
+        if (!email.includes('@') || typeof input.nombre !== 'string' || !input.nombre.trim() || !roles.includes(input.rol) || typeof input.password !== 'string' || input.password.length < 5) return json(res, 400, { error: 'Indica nombre, correo válido, rol y contraseña de al menos 5 caracteres.' });
         let personaId = input.personaId;
         if(input.rol==='alumno'){
           const matricula=typeof input.matricula==='string'?input.matricula.trim().toLocaleLowerCase('es'):'';

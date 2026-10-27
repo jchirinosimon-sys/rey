@@ -25,7 +25,7 @@ La aplicación incluye pruebas de almacenamiento, autenticación y flujos HTTP. 
 ## Instalación local
 
 1. Copia `.env.example` a `.env`.
-2. Cambia `SESSION_SECRET` por un secreto aleatorio de 32 caracteres o más y configura un correo y contraseña inicial para dirección (12 caracteres o más).
+2. Cambia `SESSION_SECRET` por un secreto aleatorio de 32 caracteres o más y configura un correo y contraseña inicial para dirección (mínimo 5 caracteres; se recomienda una clave larga y única).
 3. Ejecuta `npm run init` una vez. El comando crea las colecciones JSON y un usuario administrador; no imprime la contraseña.
 4. Ejecuta `npm start` y abre `http://127.0.0.1:3000`.
 5. Ejecuta `npm test` para verificar la implementación.
