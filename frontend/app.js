@@ -158,6 +158,7 @@ async function showPortal(user) {
 async function loadPage(key,title,button,offset=0) {
   clearTimeout(qrRotationTimer);if(key!==currentPage){offset=0;searchTerm='';editingId=null;$('#record-search').value='';}currentPage=key;currentOffset=offset;document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));button?.classList.add('active');
   $('#record-search').classList.toggle('hidden',key==='dashboard'||key==='perfil'||key==='backups'||key==='vincular_alumno');$('#record-search').placeholder=key==='usuarios'?'Buscar por nombre o correo…':'Buscar registros';$('#record-search').setAttribute('aria-label',key==='usuarios'?'Buscar usuarios por nombre o correo':'Buscar registros');
+  document.querySelector('.module-card').classList.toggle('hidden',key==='dashboard');
   $('#dashboard-content').replaceChildren();$('#list-title').textContent=title;$('#module-kicker').textContent=key==='dashboard'?'VISTA GENERAL':'REGISTROS ESCOLARES';$('#list').innerHTML='<div class="loading" role="status">Cargando información…</div>';
   const isDirection=me?.rol==='direccion';$('#account-admin').classList.toggle('hidden',!isDirection||key!=='usuarios');$('#settings-admin').classList.toggle('hidden',!isDirection||key!=='configuracion');
   const canCreate=isDirection&&forms[key];$('#record-admin').classList.toggle('hidden',!canCreate);if(canCreate)buildRecordForm(key);
@@ -167,13 +168,11 @@ async function loadPage(key,title,button,offset=0) {
     const pageSize=key==='permisos'?10:50;const params=new URLSearchParams({limit:String(pageSize),offset:String(offset)});if(searchTerm)params.set('q',searchTerm);if(me?.rol==='tutor'&&selectedFamilyStudent)params.set('alumnoId',selectedFamilyStudent);const result=await api(`/api/${key}${key==='dashboard'?'':`?${params}`}`);const total=api.lastTotal??result.length;
     $('#dashboard-content').replaceChildren();
     if(key==='dashboard'){
-      const sections=[
-        {title:'Alumnos',description:'Matrícula, entradas e incidencias de hoy.',items:[['alumnos','Alumnos','◉'],['asistencias','Entradas hoy','↗'],['faltas','Faltas hoy','!'],['retardos','Retardos hoy','◴'],['calificaciones','Calificaciones','☆']]},
-        {title:'Maestros',description:'Personal docente y seguimiento de clases.',items:[['maestros','Maestros','♧'],['listasPendientes','Listas abiertas','☷']]},
-        {title:'Otros',description:'Organización, jornadas y comunicación escolar.',items:[['organizacion','Áreas y grupos','▦'],['jornadas','Jornadas activas','◷'],['notificacionesPendientes','Avisos pendientes','✉'],['periodosActivos','Periodos activos','▤']]}
-      ];
-      for(const sectionData of sections){const section=document.createElement('section');section.className='dashboard-section';const heading=document.createElement('div');heading.className='dashboard-section-heading';const title=document.createElement('h3');title.textContent=sectionData.title;const description=document.createElement('p');description.textContent=sectionData.description;heading.append(title,description);const grid=document.createElement('div');grid.className='metric-grid';grid.append(...sectionData.items.map(([k,l,i])=>metric(l,result[k]??0,i)));section.append(heading,grid);$('#dashboard-content').append(section);}
-      $('#list').innerHTML='<div class="empty-state"><span class="empty-icon">✦</span><strong>Tu institución, al día</strong><span>Las cifras se calculan directamente desde los registros escolares.</span></div>';return;
+      const welcome=document.createElement('section');welcome.className='direction-home';
+      const eyebrow=document.createElement('p');eyebrow.className='eyebrow';eyebrow.textContent='ESPACIO DE TRABAJO';
+      const heading=document.createElement('h3');heading.textContent='Centro de control';
+      const description=document.createElement('p');description.textContent='Selecciona una sección del menú para administrar la información escolar.';
+      welcome.append(eyebrow,heading,description);$('#dashboard-content').append(welcome);$('#list').replaceChildren();return;
     }
     if(key==='jornadas'&&me?.rol==='direccion')renderJourneyAction();
     if(key==='mensajes'&&me?.rol==='direccion'){await renderMessageAction();const pushHint=document.createElement('p');pushHint.className='form-note';pushHint.textContent='Los mensajes quedan en la bandeja. El teléfono debe tener las notificaciones activadas. Si está apagado o sin conexión, el servicio intentará conservar la notificación hasta 28 días; la entrega al encenderlo depende de Android o iOS y de que el permiso siga activo.';$('#list').prepend(pushHint);}
