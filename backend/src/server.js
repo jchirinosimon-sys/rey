@@ -181,7 +181,48 @@ const server = http.createServer(async (req, res) => {
           const requests=await read('solicitudes_cuenta'),request=requests.find(x=>x.id===accountRequestMatch[1]);if(!request||request.estado!=='pendiente')throw fail(409,'La solicitud no existe o ya fue atendida.');
           const {passwordHash,passkeyCredential:_legacyPasskeyCredential,...requestInfo}=request;
           if(input.decision==='rechazar'){resolvedRequest={...requestInfo,estado:'rechazada',resueltaPor:user.id,resueltaEn:new Date().toISOString()};return[{collection:'solicitudes_cuenta',upsert:[resolvedRequest]}];}
-          const personCollection={alumno:'alumnos',maestro:'maestros',tutor:'tutores'}[request.rolSolicitado];let personaId=typeof input.personaId==='string'?input.personaId.trim():'';if(request.rolSolicitado==='alumno'){const area=(await read('especialidades')).find(x=>x.id===request.especialidadId&&x.activo!==false);if(!area)throw fail(409,'La especialidad ya no existe o está inactiva. Rechaza la solicitud o reactiva el área.');const matricula=typeof request.matricula==='string'?request.matricula.trim().toLocaleLowerCase('es'):'';const student=(await read('alumnos')).find(x=>String(x.matricula??'').trim().toLocaleLowerCase('es')===matricula&&x.activo!==false);if(!student)throw fail(400,'No existe un alumno activo con esa matrícula. Verifica la matrícula con la institución.');if(student.especialidadId&&student.especialidadId!==request.especialidadId)throw fail(409,'La especialidad de la matrícula no coincide con la indicada en la solicitud.');personaId=student.id;}else if(!personaId){const people=(await read(personCollection)).filter(x=>x.activo!==false&&String(x.correo??'').trim().toLowerCase()===request.email);if(people.length>1)throw fail(409,'Hay varias fichas activas con ese correo. Corrige los duplicados antes de aprobar.');if(people.length===1)personaId=people[0].id;else{const nameParts=request.nombre.trim().split(/\s+/),nombres=nameParts.length>1?nameParts.slice(0,-1).join(' '):nameParts[0],apellidos=nameParts.length>1?nameParts[nameParts.length-1]:'';createdPerson={id:randomUUID(),nombres,apellidos,correo:request.email,activo:true,creadoEn:new Date().toISOString()};personaId=createdPerson.id;}}if(!personaId||(!createdPerson&&!(await read(personCollection)).some(x=>x.id===personaId&&x.activo!==false)))throw fail(400,'No se encontró una ficha activa que coincida con esta solicitud.');
+          const personCollection={alumno:'alumnos',maestro:'maestros',tutor:'tutores'}[request.rolSolicitado];
+          let personaId=typeof input.personaId==='string'?input.personaId.trim():'';
+          if(request.rolSolicitado==='alumno'){
+            const area=(await read('especialidades')).find(x=>x.id===request.especialidadId&&x.activo!==false);
+            if(!area)throw fail(409,'La especialidad ya no existe o está inactiva. Rechaza la solicitud o reactiva el área.');
+            const matricula=typeof request.matricula==='string'?request.matricula.trim():'';
+            const normalizedMatricula=matricula.toLocaleLowerCase('es');
+            const matchingStudents=(await read('alumnos')).filter(x=>String(x.matricula??'').trim().toLocaleLowerCase('es')===normalizedMatricula);
+            if(matchingStudents.length>1)throw fail(409,'Hay varias fichas con esa matrícula. Corrige los duplicados antes de aprobar.');
+            const existingStudent=matchingStudents[0];
+            if(existingStudent?.activo===false)throw fail(409,'La ficha de esa matrícula está inactiva. Reactívala antes de aprobar la solicitud.');
+            if(existingStudent?.especialidadId&&existingStudent.especialidadId!==request.especialidadId)throw fail(409,'La especialidad de la matrícula no coincide con la indicada en la solicitud.');
+            const nameParts=request.nombre.trim().split(/\s+/);
+            const nombres=nameParts.length>1?nameParts.slice(0,-1).join(' '):nameParts[0];
+            const apellidos=nameParts.length>1?nameParts[nameParts.length-1]:'';
+            const now=new Date().toISOString();
+            createdPerson={
+              ...(existingStudent??{}),
+              id:existingStudent?.id??randomUUID(),
+              nombres,
+              apellidos,
+              correo:request.email,
+              matricula,
+              especialidadId:area.id,
+              especialidadNombre:area.nombre,
+              activo:true,
+              ...(existingStudent?{actualizadoEn:now}:{creadoEn:now})
+            };
+            personaId=createdPerson.id;
+          }else if(!personaId){
+            const people=(await read(personCollection)).filter(x=>x.activo!==false&&String(x.correo??'').trim().toLowerCase()===request.email);
+            if(people.length>1)throw fail(409,'Hay varias fichas activas con ese correo. Corrige los duplicados antes de aprobar.');
+            if(people.length===1)personaId=people[0].id;
+            else{
+              const nameParts=request.nombre.trim().split(/\s+/);
+              const nombres=nameParts.length>1?nameParts.slice(0,-1).join(' '):nameParts[0];
+              const apellidos=nameParts.length>1?nameParts[nameParts.length-1]:'';
+              createdPerson={id:randomUUID(),nombres,apellidos,correo:request.email,activo:true,creadoEn:new Date().toISOString()};
+              personaId=createdPerson.id;
+            }
+          }
+          if(!personaId||(!createdPerson&&!(await read(personCollection)).some(x=>x.id===personaId&&x.activo!==false)))throw fail(400,'No se encontró una ficha activa que coincida con esta solicitud.');
           const accounts=await read('usuarios');if(accounts.some(x=>x.email===request.email))throw fail(409,'Ya existe una cuenta con ese correo.');if(accounts.some(x=>x.rol===request.rolSolicitado&&x.personaId===personaId&&x.activo))throw fail(409,'Ese expediente ya tiene una cuenta activa.');
           approvedUser={id:randomUUID(),email:request.email,nombre:request.nombre,rol:request.rolSolicitado,personaId,activo:true,...(request.rolSolicitado==='alumno'?{especialidadId:request.especialidadId}:{}),passwordHash,creadoEn:new Date().toISOString(),aprobadoPor:user.id};
           resolvedRequest={...requestInfo,estado:'aprobada',usuarioId:approvedUser.id,resueltaPor:user.id,resueltaEn:new Date().toISOString()};

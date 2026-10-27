@@ -925,3 +925,367 @@ body.splash-open {
     transition-duration: .01ms !important;
   }
 }
+
+#portal .sidebar {
+  color: #f3f2eb;
+  background: #20231d;
+  border-color: #363a31;
+}
+
+#portal .sidebar-heading .eyebrow {
+  color: var(--acid);
+}
+
+#portal .menu-close {
+  color: #f3f2eb;
+  background: #ffffff0b;
+  border-color: #ffffff30;
+}
+
+#portal .menu-close:hover {
+  color: var(--ink);
+  background: var(--acid);
+}
+
+#portal .nav-link {
+  color: #e5e6dc;
+  border-radius: 3px;
+  transition: color .16s ease, background .16s ease, transform .16s ease;
+}
+
+#portal .nav-link:hover {
+  color: #fffefa;
+  background: #ffffff12;
+  transform: translateX(2px);
+}
+
+#portal .nav-link.active {
+  color: var(--ink);
+  background: var(--acid);
+  box-shadow: none;
+}
+
+#portal .nav-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--acid);
+}
+
+#portal .nav-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+#portal .nav-link.active .nav-icon {
+  color: var(--ink);
+}
+
+#portal .student-credential {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 900px);
+  margin: 20px auto 24px;
+  padding: 28px 32px 18px;
+  overflow: hidden;
+  color: #f3f2eb;
+  background:
+    radial-gradient(ellipse at 96% 4%, #d7f26a16 0, transparent 38%),
+    linear-gradient(130deg, #1d211b 0%, #272c23 58%, #30372b 100%);
+  border: 0;
+  border-left: 7px solid var(--acid);
+  border-radius: 4px;
+  box-shadow: 0 24px 54px #17191520;
+}
+
+#portal .student-credential::after {
+  position: absolute;
+  z-index: -1;
+  top: -105px;
+  right: -85px;
+  width: 300px;
+  height: 300px;
+  border: 1px solid #d7f26a20;
+  border-radius: 50%;
+  box-shadow: 0 0 0 34px #d7f26a08, 0 0 0 68px #d7f26a05;
+  content: "";
+  pointer-events: none;
+}
+
+#portal .credential-head,
+#portal .credential-identity,
+#portal .credential-details,
+#portal .credential-footer {
+  position: relative;
+  z-index: 1;
+}
+
+#portal .credential-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ffffff27;
+}
+
+#portal .credential-school-mark {
+  display: grid;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  color: var(--ink);
+  background: var(--acid);
+  font-size: 19px;
+  font-weight: 850;
+  letter-spacing: -.08em;
+}
+
+#portal .credential-institution {
+  display: grid;
+  gap: 4px;
+}
+
+#portal .credential-institution span {
+  color: var(--acid);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+#portal .credential-institution strong {
+  color: #fffefa;
+  font-size: 18px;
+  letter-spacing: -.025em;
+}
+
+#portal .credential-status {
+  margin-left: auto;
+  padding: 7px 10px;
+  color: var(--acid);
+  background: #d7f26a16;
+  border: 1px solid #d7f26a55;
+  border-radius: 2px;
+  font-size: 9px;
+  letter-spacing: .09em;
+}
+
+#portal .credential-body {
+  display: grid;
+  grid-template-areas: "identity qr" "details qr";
+  grid-template-columns: minmax(0, 1fr) 176px;
+  gap: 20px 28px;
+  align-items: center;
+  padding: 25px 0 20px;
+}
+
+#portal .credential-identity {
+  grid-area: identity;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  padding: 0;
+}
+
+#portal .credential-avatar {
+  flex: 0 0 72px;
+  width: 72px;
+  height: 72px;
+  color: var(--acid);
+  background: #ffffff0a;
+  border: 1px solid #d7f26a88;
+  border-radius: 50%;
+  box-shadow: none;
+  font-size: 23px;
+}
+
+#portal .credential-role {
+  display: block;
+  margin-bottom: 5px;
+  color: #b6baaa;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .17em;
+}
+
+#portal .credential-identity h2 {
+  margin: 0 0 8px;
+  color: #fffefa;
+  font-size: clamp(20px, 3vw, 29px);
+  font-weight: 750;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+
+#portal .credential-matricula {
+  margin: 0;
+  color: #c3c6b8;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .13em;
+}
+
+#portal .credential-matricula strong {
+  margin-left: 7px;
+  color: var(--acid);
+  font-size: 14px;
+  letter-spacing: .09em;
+}
+
+#portal .credential-details {
+  grid-area: details;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 20px;
+  margin: 0;
+}
+
+#portal .credential-details > div {
+  min-width: 0;
+  padding: 9px 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #ffffff22;
+  border-radius: 0;
+}
+
+#portal .credential-details dt {
+  margin-bottom: 5px;
+  color: #aeb3a4;
+  font-size: 9px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+#portal .credential-details dd {
+  color: #f3f2eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#portal .credential-qr {
+  grid-area: qr;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 14px 12px 12px;
+  background: #fffefa;
+  border: 0;
+  border-radius: 3px;
+}
+
+#portal .credential-qr > span {
+  color: #32362d;
+  font-size: 8px;
+  letter-spacing: .13em;
+}
+
+#portal .credential-qr > small {
+  color: #76796e;
+  font-size: 9px;
+}
+
+#portal .credential-qr-image {
+  display: block;
+  width: 130px;
+  height: 130px;
+}
+
+#portal .credential-footer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 13px 0 0;
+  color: #b6baaa;
+  border-top: 1px solid #ffffff27;
+  font-size: 9px;
+  letter-spacing: .06em;
+}
+
+#portal .credential-footer::before {
+  width: 17px;
+  height: 2px;
+  margin-right: 3px;
+  background: var(--acid);
+  content: "";
+}
+
+#portal .credential-actions,
+#portal .credential-edit {
+  width: min(100%, 900px);
+}
+
+#portal .credential-edit {
+  border-radius: 3px;
+}
+
+@media (max-width: 620px) {
+  #portal .student-credential {
+    padding: 20px 18px 16px;
+    border-left-width: 5px;
+  }
+
+  #portal .credential-head {
+    gap: 10px;
+  }
+
+  #portal .credential-school-mark {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+  }
+
+  #portal .credential-institution span {
+    font-size: 8px;
+    letter-spacing: .1em;
+  }
+
+  #portal .credential-institution strong {
+    font-size: 15px;
+  }
+
+  #portal .credential-status {
+    padding: 6px 7px;
+    font-size: 8px;
+  }
+
+  #portal .credential-body {
+    grid-template-areas: "identity" "details" "qr";
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 20px 0;
+  }
+
+  #portal .credential-avatar {
+    flex-basis: 58px;
+    width: 58px;
+    height: 58px;
+    font-size: 19px;
+  }
+
+  #portal .credential-details {
+    gap: 8px 14px;
+  }
+
+  #portal .credential-qr {
+    justify-self: center;
+    width: max-content;
+    min-width: 176px;
+  }
+
+  #portal .credential-qr-image {
+    width: 136px;
+    height: 136px;
+  }
+
+  #portal .credential-footer {
+    flex-wrap: wrap;
+    font-size: 8px;
+  }
+}
