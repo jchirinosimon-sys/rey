@@ -1,11 +1,11 @@
-const CACHE_NAME = 'asistencia-shell-v17';
+const CACHE_NAME = 'asistencia-shell-v19';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/styles.css?v=16',
   '/modules.css',
-  '/app.js?v=17',
-  '/redesign.css?v=18',
+  '/app.js?v=19',
+  '/redesign.css?v=20',
   '/qr.js',
   '/pwa.js',
   '/manifest.webmanifest',

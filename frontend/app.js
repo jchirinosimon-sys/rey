@@ -1,5 +1,149 @@
 const $ = selector => document.querySelector(selector);
 const tokenKey = 'gestionEscolarToken';
+function startWelcomeAnimation() {
+  const splash = $('#app-splash');
+  if (!splash) return;
+  const skip = $('#splash-skip');
+  const canvas = $('#splash-particles');
+  const progressBar = splash.querySelector('.splash-progress');
+  const progressFill = progressBar.querySelector('span');
+  const context = canvas.getContext('2d');
+  const duration = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 20_000;
+  let particles = [];
+  let animationFrame = 0;
+  let dismissalTimer = 0;
+  let dismissed = false;
+  const startedAt = performance.now();
+  const trapFocus = event => {
+    if (event.key === 'Escape') {
+      dismissWelcome();
+      return;
+    }
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      skip.focus();
+    }
+  };
+
+  function resizeCanvas() {
+    const bounds = canvas.getBoundingClientRect();
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(bounds.width * ratio);
+    canvas.height = Math.round(bounds.height * ratio);
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    const source = document.createElement('canvas');
+    source.width = 800;
+    source.height = 360;
+    const sourceContext = source.getContext('2d', { willReadFrequently: true });
+    sourceContext.clearRect(0, 0, source.width, source.height);
+    sourceContext.fillStyle = '#fff';
+    sourceContext.font = '800 300px "Segoe UI", Arial, sans-serif';
+    sourceContext.textAlign = 'center';
+    sourceContext.textBaseline = 'middle';
+    sourceContext.fillText('170', source.width / 2, source.height / 2, 770);
+    const pixels = sourceContext.getImageData(0, 0, source.width, source.height).data;
+    const points = [];
+    for (let y = 0; y < source.height; y += 7) {
+      for (let x = 0; x < source.width; x += 7) {
+        if (pixels[(y * source.width + x) * 4 + 3] > 128) points.push({ x: x / source.width * bounds.width, y: y / source.height * bounds.height });
+      }
+    }
+    const stride = Math.max(1, Math.ceil(points.length / 430));
+    particles = points.filter((_, index) => index % stride === 0).map(point => ({
+      targetX: point.x,
+      targetY: point.y,
+      startX: Math.random() * bounds.width,
+      startY: Math.random() * bounds.height,
+      delay: Math.random() * .28,
+      size: 2 + Math.random() * 3,
+      shape: Math.floor(Math.random() * 3),
+      color: ['#d7f26a', '#f3f2eb', '#c14932', '#9cbded'][Math.floor(Math.random() * 4)]
+    }));
+  }
+
+  function draw(now) {
+    if (dismissed) return;
+    const bounds = canvas.getBoundingClientRect();
+    const elapsed = now - startedAt;
+    const progress = duration ? Math.min(1, elapsed / duration) : 1;
+    context.clearRect(0, 0, bounds.width, bounds.height);
+    for (const particle of particles) {
+      const local = Math.min(1, Math.max(0, (progress - particle.delay) / .64));
+      const ease = 1 - (1 - local) ** 3;
+      const drawX = particle.startX + (particle.targetX - particle.startX) * ease;
+      const drawY = particle.startY + (particle.targetY - particle.startY) * ease;
+      const size = particle.size * (1 - ease * .38);
+      context.globalAlpha = .35 + ease * .65;
+      context.fillStyle = particle.color;
+      context.beginPath();
+      if (particle.shape === 0) {
+        context.arc(drawX, drawY, size, 0, Math.PI * 2);
+      } else if (particle.shape === 1) {
+        context.rect(drawX - size, drawY - size, size * 2, size * 2);
+      } else {
+        context.moveTo(drawX, drawY - size * 1.25);
+        context.lineTo(drawX + size, drawY + size);
+        context.lineTo(drawX - size, drawY + size);
+        context.closePath();
+      }
+      context.fill();
+    }
+    context.globalAlpha = 1;
+    const percent = Math.round(progress * 100);
+    progressBar.setAttribute('aria-valuenow', String(percent));
+    progressFill.style.transform = `scaleX(${progress})`;
+    if (progress >= 1) {
+      dismissWelcome();
+      return;
+    }
+    animationFrame = requestAnimationFrame(draw);
+  }
+
+  function dismissWelcome() {
+    if (dismissed) return;
+    dismissed = true;
+    cancelAnimationFrame(animationFrame);
+    clearTimeout(dismissalTimer);
+    window.removeEventListener('resize', resizeCanvas);
+    document.removeEventListener('keydown', trapFocus);
+    document.body.classList.remove('splash-open');
+    splash.classList.add('is-leaving');
+    splash.setAttribute('aria-hidden', 'true');
+    splash.setAttribute('inert', '');
+    window.setTimeout(() => splash.classList.remove('is-active', 'is-leaving'), 650);
+  }
+
+  resizeCanvas();
+  document.body.classList.add('splash-open');
+  window.addEventListener('resize', resizeCanvas);
+  skip.addEventListener('click', dismissWelcome, { once: true });
+  document.addEventListener('keydown', trapFocus);
+  skip.focus({ preventScroll: true });
+  if (duration) {
+    animationFrame = requestAnimationFrame(draw);
+    dismissalTimer = window.setTimeout(dismissWelcome, duration);
+  }
+  else window.setTimeout(dismissWelcome, 80);
+}
+startWelcomeAnimation();
+function setMenuOpen(open) {
+  const portal = $('#portal');
+  const sidebar = $('#side-menu');
+  const toggle = $('#menu-toggle');
+  portal.classList.toggle('menu-open', open);
+  toggle.setAttribute('aria-expanded', String(open));
+  sidebar.setAttribute('aria-hidden', String(!open));
+  sidebar.inert = !open;
+  if (open) sidebar.querySelector('.nav-link')?.focus();
+  else toggle.focus();
+}
+$('#menu-toggle').addEventListener('click', () => setMenuOpen(true));
+$('#menu-close').addEventListener('click', () => setMenuOpen(false));
+$('#nav-backdrop').addEventListener('click', () => setMenuOpen(false));
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && $('#portal').classList.contains('menu-open')) setMenuOpen(false);
+});
 const incomingQr = new URLSearchParams(location.search).get('qr');
 if (incomingQr && /^(?:[0-9]{5}|[A-Za-z0-9_-]{22})$/.test(incomingQr)) {
   sessionStorage.setItem('pendingAttendanceQr', incomingQr);
@@ -108,6 +252,7 @@ async function submitPendingAttendance(user) {
   showAttendanceNotice('QR listo. Pulsa «Registrar entrada» para guardar la entrada.');
 }
 function goLogin(message='') {
+  setMenuOpen(false);
   localStorage.removeItem(tokenKey); $('#portal').classList.add('hidden'); $('#signup').classList.add('hidden'); $('#login').classList.add('hidden'); $('#role-selection').classList.remove('hidden'); $('#session-indicator').classList.add('hidden'); selectedLoginMode=null;
   $('#login-error').textContent = '';$('#role-selection-error').textContent=message;
   if(incomingQr)openLoginMode('alumno');
@@ -132,6 +277,7 @@ function metric(label,value,icon) {
   const amount=document.createElement('strong');amount.textContent=Number(value).toLocaleString('es-GT');item.append(top,amount);top.append(name,mark);return item;
 }
 async function showPortal(user) {
+  setMenuOpen(false);
   $('#role-selection').classList.add('hidden');$('#login').classList.add('hidden');$('#portal').classList.remove('hidden');$('#session-indicator').classList.remove('hidden');
   $('#portal').classList.remove('role-direccion','role-maestro','role-tutor','role-alumno');$('#portal').classList.add(`role-${user.rol}`);
   $('#welcome-kicker').textContent=`PORTAL DE ${roleName[user.rol]?.toUpperCase() ?? user.rol.toUpperCase()}`;
@@ -150,7 +296,7 @@ async function showPortal(user) {
     : user.rol==='tutor' ? [['vincular_alumno','Vincular alumno','↔'],['asistencias','Entradas','↗'],['faltas','Faltas','!'],['permisos','Permisos','▤'],['justificaciones','Justificaciones','✓'],['boletas','Boletas','▧'],['avisos_escolares','Avisos','◉']]
     : [['perfil','Mi perfil','♙'],['asistencias','Entradas','↗'],['faltas','Faltas','!'],['permisos','Permisos','▤'],['calificaciones','Calificaciones','☆'],['boletas','Boletas','▧'],['avisos_escolares','Avisos','◉']];
   const nav=$('#nav');
-  const makeNavButton=([key,title,icon])=>{const b=document.createElement('button');b.className='nav-link';b.innerHTML=`<span class="nav-icon">${icon}</span><span>${title}</span>`;b.onclick=()=>{loadPage(key,title,b);document.querySelector('.main-column').scrollIntoView({behavior:'smooth',block:'start'});};return b;};
+  const makeNavButton=([key,title,icon])=>{const b=document.createElement('button');b.className='nav-link';b.innerHTML=`<span class="nav-icon">${icon}</span><span>${title}</span>`;b.onclick=()=>{setMenuOpen(false);loadPage(key,title,b);document.querySelector('.main-column').scrollIntoView({behavior:'smooth',block:'start'});};return b;};
   nav.replaceChildren(...pages.map(makeNavButton));
   if(user.rol==='direccion') await loadPage('dashboard','Resumen',$('#nav button')); else await loadPage(pages[0][0],pages[0][1],$('#nav button'));
   const query=new URLSearchParams(location.search),target=query.has('mensaje')?'mensajes':query.has('aviso')?'avisos_escolares':null;if(target){const navButton=[...document.querySelectorAll('.nav-link')].find(item=>item.textContent.includes(labels[target]));if(navButton){await loadPage(target,labels[target],navButton);history.replaceState(null,'',location.pathname+location.hash)}}
